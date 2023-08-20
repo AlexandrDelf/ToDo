@@ -1,0 +1,86 @@
+MDFloatLayout:
+    MDLabel: #виджет для отображения текста
+        id: task_label
+        halign: "center" #выравнивание по центру
+        markup: True #разрешает разметку текста
+        text: "[b][u][size=36]НЕЗАБУДКА![/size][/u][/b]" #заголовок со стилями размера и жирности
+        pos_hint: {"y": 0.45} #координаты размещения
+
+    ScrollView: #виджет для прокрутки содержимого
+        pos_hint: {"center_y": 0.5, "center_x": 0.5} #позиция виджетов
+        size_hint: 0.9, 0.8 #размер виджетов
+
+        # виджет списка, куда будут добавляться элементы
+        MDList:
+            id: container #идентификатор списка, чтобы обращаться к нему из кода
+
+    # вызов диалога добавления задачи
+    MDFloatingActionButton:
+        icon: "plus-thick" # иконка кнопки в виде символа плюс
+        on_release: app.show_task_dialog() # Обработчик нажатия на кнопку 
+        elevation_normal: 6 # Высота тени
+        pos_hint: {"x": 0.42, "y": 0.07} # Позиция
+
+# Описание содержимого диалога добавления задачи
+<DialogContent>:
+    orientation: "vertical" # Вертикальная ориентация
+    spacing: "10dp" # Отступы между виджетами
+    size_hint: 1, None # Размеры окна
+    height: "130dp"
+
+    GridLayout:
+        rows: 1
+
+        # Поле для ввода текста задачи
+        MDTextField:
+            id: task_text # Уникальный идентификатор для доступа
+            hint_text: "Добавить запись ..." # Подсказка при пустом поле
+            pos_hint: {"center_y": 0.4} # Расположение по вертикали
+            max_text_length: 50 # Максимальная длина текста
+            on_text_validate: (app.add_task(task_text, date_text.text), app.close_dialog())  # При нажатии Enter вызывается валидация и сохранение, вызов методов добавления задачи и закрытия диалога
+
+        # Кнопка с иконкой календаря
+        MDIconButton:
+            icon: "calendar" # Иконка календаря
+            on_release: root.show_date_picker()  # Обработчик нажатия. Вызов диалога выбора даты
+            padding: "10px" # Внутренние отступы
+    
+    # Элемент для отображения выбранной даты
+    MDLabel:
+        spacing: "10px" # Расстояние между нижним и верхним текстом
+        id: date_text   # Уникальный идентификатор для доступа из кода
+
+    # BoxLayout для размещения кнопок
+    BoxLayout: 
+        orientation: "horizontal" # Размещаем кнопки горизонтально
+
+        # Кнопка сохранения задачи
+        MDRaisedButton:
+            text: "сохранить"
+            on_release: (app.add_task(task_text, date_text.text),app.close_dialog()) # Обработчик нажатия - сохранение и закрытие
+
+        # Кнопка отмены        
+        MDFlatButton:
+            text: "отменить"
+            on_release: app.close_dialog() # Закрываем диалог без сохранеия
+
+# Описание виджета элемента списка задач 
+<ListItemWithCheckbox>:
+    id: the_list_item  # Идентификатор для доступа к элементу
+    markup: True # Включаем разметку текста
+
+    # Чекбокс для отметки задачи как выполненной
+    LeftCheckbox:
+        id: check
+        on_release:
+            root.mark(check, the_list_item) # Вызов метода пометки элемента
+    
+    # Кнопка удаления справа
+    IconRightWidget:
+        icon: "trash-can-outline" # Иконка
+        theme_text_color: "Custom"
+        text_color: 1, 0, 0, 1
+        on_release:
+            root.delete_item(the_list_item) # Обработчик нажатия, вызов метода удаления
+
+        
